@@ -41,11 +41,11 @@ architecture a_async_cmp of async_cmp is
   end function;
 begin
 
-  dirset_n <= not ((wptr(N) xor rptr(N - 1)) and not (wptr(N - 1) xor rptr(N)));
-  dirclr_n <= not (((not wptr(N) xor rptr(N - 1)) and (wptr(N - 1) xor rptr(N))) or not wrst_n);
+  dirset_n <= not ((wptr(N) xor rptr(N - 1)) and not (wptr(N - 1) xor rptr(N))) when wrst_n else '0';
+  dirclr_n <= not (((not wptr(N) xor rptr(N - 1)) and (wptr(N - 1) xor rptr(N))) or not wrst_n) when wrst_n else '0';
 
-  aempty_n <= not(bool_to_std_logic(wptr = rptr) and not direction);
-  afull_n <= not(bool_to_std_logic(wptr = rptr) and not direction);
+  aempty_n <= not(bool_to_std_logic(wptr = rptr) and not direction) when wrst_n else '0';
+  afull_n <= not(bool_to_std_logic(wptr = rptr) and not direction) when wrst_n else '0';
 
   process(all)
   begin

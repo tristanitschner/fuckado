@@ -38,7 +38,7 @@ end;
 
 architecture a_fifo2 of fifo2 is 
   signal wptr,rptr,waddr,raddr : std_logic_vector(addr_w - 1 downto 0);
-  signal aempty_n,afull_n : std_logic;
+  signal aempty_n,afull_n : std_logic := '0';
 begin
   async_cmp_inst : entity work.async_cmp
   generic map (
