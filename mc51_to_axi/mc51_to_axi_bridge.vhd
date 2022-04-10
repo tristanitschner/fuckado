@@ -164,15 +164,15 @@ begin
     if rising_edge(m_axi_clk) then
       if not m_axi_resetn then
         registers <= (others => (others => '0'));
+        m_axi_arvalid <= '0';
+        m_axi_rready  <= '0';
+        m_axi_awvalid <= '0';
+        m_axi_wvalid  <= '0';
       else
         case state is
           when idle =>
             if cs and s_mb_we then
               registers(index(s_mb_addr)) <= s_mb_wrdata;
-              m_axi_arvalid <= '0';
-              m_axi_rready  <= '0';
-              m_axi_awvalid <= '0';
-              m_axi_wvalid  <= '0';
             end if;
             if start_read then
               state <= read;

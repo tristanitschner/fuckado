@@ -1,6 +1,0 @@
-WARNING: [IP_Flow 19-3480] slave: Portmap direction mismatched between component port 'M_AXI_WDATA' and definition port 'wdata'.
-WARNING: [IP_Flow 19-3480] slave: Portmap direction mismatched between component port 'M_AXI_RDATA' and definition port 'rdata'.
-WARNING: [IP_Flow 19-1965] Bus Interface 'M_AXI': A port map to the required logical port "addr" of the bus abstraction "tristan.itschner:playground:mb_rtl:1.0" is missing.
-WARNING: [IP_Flow 19-1965] Bus Interface 'M_AXI': A port map to the required logical port "we" of the bus abstraction "tristan.itschner:playground:mb_rtl:1.0" is missing.
-WARNING: [IP_Flow 19-3157] Bus Interface 'rstn': Bus parameter POLARITY is ACTIVE_LOW but port 'rstn' is not *resetn - please double check the POLARITY setting.
-WARNING: [IP_Flow 19-5661] Bus Interface 'clk' does not have any bus interfaces associated with it.
