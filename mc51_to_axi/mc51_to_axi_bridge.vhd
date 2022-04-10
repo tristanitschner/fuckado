@@ -24,57 +24,57 @@ entity mc51_to_axi_bridge is
     id_w : natural := 4
           );
   port (
-         clk : in std_logic;
-         rstn : in std_logic;
+         m_axi_clk : in std_logic;
+         m_axi_resetn : in std_logic;
 
          -- axi master interface
-         M_AXI_AWADDR  : out std_logic_vector(31 downto 0);
-         M_AXI_AWPROT  : out std_logic_vector(2 downto 0);
-         M_AXI_AWVALID : out std_logic := '0';
-         M_AXI_AWREADY : in  std_logic := '0';
+         m_axi_awaddr  : out std_logic_vector(31 downto 0);
+         m_axi_awprot  : out std_logic_vector(2 downto 0);
+         m_axi_awvalid : out std_logic := '0';
+         m_axi_awready : in  std_logic := '0';
 
-         M_AXI_WDATA   : out std_logic_vector(bus_w - 1 downto 0);
-         M_AXI_WSTRB   : out std_logic_vector((bus_w/8) - 1 downto 0);
-         M_AXI_WVALID  : out std_logic := '0';
-         M_AXI_WREADY  : in  std_logic := '0';
+         m_axi_wdata   : out std_logic_vector(bus_w - 1 downto 0);
+         m_axi_wstrb   : out std_logic_vector((bus_w/8) - 1 downto 0);
+         m_axi_wvalid  : out std_logic := '0';
+         m_axi_wready  : in  std_logic := '0';
 
-         M_AXI_BRESP   : in  std_logic_vector(1 downto 0);
-         M_AXI_BVALID  : in  std_logic := '0';
-         M_AXI_BREADY  : out std_logic := '0';
+         m_axi_bresp   : in  std_logic_vector(1 downto 0);
+         m_axi_bvalid  : in  std_logic := '0';
+         m_axi_bready  : out std_logic := '0';
 
-         M_AXI_ARADDR  : out std_logic_vector(31 downto 0);
-         M_AXI_ARPROT  : out std_logic_vector(2 downto 0);
-         M_AXI_ARVALID : out std_logic := '0';
-         M_AXI_ARREADY : in  std_logic := '0';
+         m_axi_araddr  : out std_logic_vector(31 downto 0);
+         m_axi_arprot  : out std_logic_vector(2 downto 0);
+         m_axi_arvalid : out std_logic := '0';
+         m_axi_arready : in  std_logic := '0';
 
-         M_AXI_RDATA   : in  std_logic_vector(bus_w - 1 downto 0);
-         M_AXI_RRESP   : in  std_logic_vector(1 downto 0);
-         M_AXI_RVALID  : in  std_logic := '0';
-         M_AXI_RREADY  : out std_logic := '0';
+         m_axi_rdata   : in  std_logic_vector(bus_w - 1 downto 0);
+         m_axi_rresp   : in  std_logic_vector(1 downto 0);
+         m_axi_rvalid  : in  std_logic := '0';
+         m_axi_rready  : out std_logic := '0';
 
           -- extended axi master signals
-         M_AXI_ARID    : out std_logic_vector ( id_w - 1 downto 0 );
-         M_AXI_ARLEN   : out std_logic_vector ( 7 downto 0 );
-         M_AXI_ARSIZE  : out std_logic_vector ( 2 downto 0 );
-         M_AXI_ARBURST : out std_logic_vector ( 1 downto 0 );
-         M_AXI_ARLOCK  : out std_logic;
-         M_AXI_ARCACHE : out std_logic_vector ( 3 downto 0 );
-         M_AXI_RID     : in  std_logic_vector ( id_w - 1 downto 0 );
-         M_AXI_RLAST   : in  std_logic;
+         m_axi_arid    : out std_logic_vector ( id_w - 1 downto 0 );
+         m_axi_arlen   : out std_logic_vector ( 7 downto 0 );
+         m_axi_arsize  : out std_logic_vector ( 2 downto 0 );
+         m_axi_arburst : out std_logic_vector ( 1 downto 0 );
+         m_axi_arlock  : out std_logic;
+         m_axi_arcache : out std_logic_vector ( 3 downto 0 );
+         m_axi_rid     : in  std_logic_vector ( id_w - 1 downto 0 );
+         m_axi_rlast   : in  std_logic;
 
-         M_AXI_AWID    : out std_logic_vector ( id_w - 1 downto 0 );
-         M_AXI_AWLEN   : out std_logic_vector ( 7 downto 0 );
-         M_AXI_AWSIZE  : out std_logic_vector ( 2 downto 0 );
-         M_AXI_AWBURST : out std_logic_vector ( 1 downto 0 );
-         M_AXI_AWLOCK  : out std_logic;
-         M_AXI_WLAST   : out std_logic;
-         M_AXI_AWCACHE : out std_logic_vector ( 3 downto 0 );
+         m_axi_awid    : out std_logic_vector ( id_w - 1 downto 0 );
+         m_axi_awlen   : out std_logic_vector ( 7 downto 0 );
+         m_axi_awsize  : out std_logic_vector ( 2 downto 0 );
+         m_axi_awburst : out std_logic_vector ( 1 downto 0 );
+         m_axi_awlock  : out std_logic;
+         m_axi_wlast   : out std_logic;
+         m_axi_awcache : out std_logic_vector ( 3 downto 0 );
 
          -- mc51 interface
-         i_addr   : in  std_logic_vector(3 downto 0);
-         i_data : in  std_logic_vector(7 downto 0);
-         o_data : out std_logic_vector(7 downto 0);
-         we     : in  std_logic;
+         s_mb_addr   : in  std_logic_vector(3 downto 0);
+         s_mb_wrdata : in  std_logic_vector(7 downto 0);
+         s_mb_rddata : out std_logic_vector(7 downto 0);
+         s_mb_we     : in  std_logic;
          cs     : in  std_logic
        );
 end;
@@ -94,13 +94,6 @@ architecture a_mc51_to_axi_bridge of mc51_to_axi_bridge is
   end function;
   constant BURST_INC : std_logic_vector := "01";
 
-  -- define the handshakes
-  signal aw_hs : std_logic; 
-  signal w_hs  : std_logic; 
-  signal b_hs  : std_logic; 
-  signal ar_hs : std_logic; 
-  signal r_hs  : std_logic; 
-
   type reg_t is array (16 downto 0) of std_logic_vector(7 downto 0);
   signal registers : reg_t;
 
@@ -116,12 +109,6 @@ architecture a_mc51_to_axi_bridge of mc51_to_axi_bridge is
   
 begin
   assert (bus_w mod 8 = 0) report "bus width must be a multiple of 8." severity failure;
-
-  aw_hs <= M_AXI_AWREADY and M_AXI_AWVALID;
-  w_hs  <= M_AXI_WREADY  and M_AXI_WVALID;
-  b_hs  <= M_AXI_BREADY  and M_AXI_BVALID;
-  ar_hs <= M_AXI_ARREADY and M_AXI_ARVALID;
-  r_hs  <= M_AXI_RREADY  and M_AXI_RVALID;
 
   -- assign these
   start_write <= registers(0)(0);
@@ -141,78 +128,80 @@ begin
   registers(12);
 
   -- unused signals
-  M_AXI_ARID    <= (others => '0');
-  M_AXI_AWID    <= (others => '0');
-  M_AXI_AWPROT  <= "000";
-  M_AXI_ARPROT  <= "000";
+  m_axi_arid    <= (others => '0');
+  m_axi_awid    <= (others => '0');
+  m_axi_awprot  <= "000";
+  m_axi_arprot  <= "000";
   
-  M_AXI_ARLOCK  <= '0';
-  M_AXI_AWLOCK  <= '0';
+  m_axi_arlock  <= '0';
+  m_axi_awlock  <= '0';
 
-  M_AXI_AWSIZE  <= to_std_logic_vector(clog2(bus_w), m_axi_awsize'length);
-  M_AXI_ARSIZE  <= to_std_logic_vector(clog2(bus_w), m_axi_arsize'length);
+  m_axi_awsize  <= to_std_logic_vector(clog2(bus_w), m_axi_awsize'length);
+  m_axi_arsize  <= to_std_logic_vector(clog2(bus_w), m_axi_arsize'length);
 
-  M_AXI_ARCACHE <= "1111";
-  M_AXI_AWCACHE <= "1111";
+  m_axi_arcache <= "1111";
+  m_axi_awcache <= "1111";
   
-  M_AXI_AWBURST <= BURST_INC;
-  M_AXI_ARBURST <= BURST_INC;
+  m_axi_awburst <= burst_inc;
+  m_axi_arburst <= burst_inc;
 
-  M_AXI_BREADY <= '1';
+  m_axi_bready <= '1';
 
-  M_AXI_WDATA <= wdata;
-  M_AXI_AWADDR <= addr;
-  M_AXI_ARADDR <= addr;
+  m_axi_wdata <= wdata;
+  m_axi_awaddr <= addr;
+  m_axi_araddr <= addr;
 
-  M_AXI_ARLEN <= x"00";
-  M_AXI_AWLEN <= x"00";
+  m_axi_arlen <= x"00";
+  m_axi_awlen <= x"00";
 
-  M_AXI_WLAST <= '1';
+  m_axi_wlast <= '1';
 
-  M_AXI_WSTRB <= x"f";
+  m_axi_wstrb <= x"f";
 
   -- logic for the handshake signals / main state machine
   process (all)
   begin
-    if rising_edge(clk) then
-      if not rstn then
+    if rising_edge(m_axi_clk) then
+      if not m_axi_resetn then
         registers <= (others => (others => '0'));
       else
         case state is
           when idle =>
-            if cs and we then
-              registers(index(i_addr)) <= i_data;
+            if cs and s_mb_we then
+              registers(index(s_mb_addr)) <= s_mb_wrdata;
+              m_axi_arvalid <= '0';
+              m_axi_rready  <= '0';
+              m_axi_awvalid <= '0';
+              m_axi_wvalid  <= '0';
             end if;
             if start_read then
               state <= read;
-              M_AXI_ARVALID <= '1';
-              M_AXI_RREADY <= '1';
+              m_axi_arvalid <= '1';
+              m_axi_rready <= '1';
             elsif start_write then
               state <= write;
-              M_AXI_AWVALID <= '1';
-              M_AXI_WVALID <= '1';
+              m_axi_awvalid <= '1';
+              m_axi_wvalid <= '1';
             end if;
-
           when read =>
-            if ar_hs then 
-              M_AXI_ARVALID <= '0';
+            if m_axi_arready then 
+              m_axi_arvalid <= '0';
             end if;
-            if r_hs then 
-              registers(11) <= M_AXI_RDATA(31 downto 24);
-              registers(10) <= M_AXI_RDATA(23 downto 16);
-              registers(9)  <= M_AXI_RDATA(15 downto 8);
-              registers(8)  <= M_AXI_RDATA(7  downto 0);
-              M_AXI_RREADY <= '0';
+            if m_axi_rvalid then 
+              registers(11) <= m_axi_rdata(31 downto 24);
+              registers(10) <= m_axi_rdata(23 downto 16);
+              registers(9)  <= m_axi_rdata(15 downto 8);
+              registers(8)  <= m_axi_rdata(7  downto 0);
+              m_axi_rready <= '0';
               state <= idle;
               registers(1)(0) <= '0';
             end if;
-
           when write =>
-              if aw_hs then 
-                M_AXI_AWVALID <= '0';
+              if m_axi_awready then 
+                m_axi_awvalid <= '0';
               end if;
-              if w_hs then 
-                M_AXI_WVALID <= '1';
+              if m_axi_wready then 
+                m_axi_wvalid <= '1';
                 state <= idle;
               registers(0)(0) <= '0';
             end if;
@@ -223,5 +212,5 @@ begin
     end if;
   end process;
 
-  o_data <= registers(index(i_addr)) when cs else (others => '0');
+  s_mb_rddata <= registers(index(s_mb_addr)) when cs else (others => '0');
 end;
