@@ -33,9 +33,10 @@ entity mdio_controller2 is
          data_o   : out std_logic_vector(15 downto 0);
          phy_addr : in  std_logic_vector(4  downto 0);
          reg_addr : in  std_logic_vector(4  downto 0);
+         busy     : out std_logic;
 
          -- master
-         mdc    : out std_logic;
+         mdc    : out std_logic := '0';
          mdio_i : in  std_logic;
          mdio_o : out std_logic;
          mdio_t : out std_logic
@@ -58,22 +59,25 @@ begin
     rst <= i_rst;
   end generate;
 
-  mdc_proc : process(all)
-    variable counter : integer := 0;
+  mdc_block : block 
+    signal counter : integer := 0;
   begin
-    if rst then
-      counter := 0;
-    elsif rising_edge(i_clk) then
-      if counter = 0 then
-        counter := counter_ceiling;
-        mdc <= not mdc;
-      else 
-        counter := counter - 1;
+    mdc_proc : process(all)
+    begin
+      if rst then
+        counter <= 0;
+      elsif rising_edge(i_clk) then
+        if counter = 0 then
+          counter <= counter_ceiling;
+          mdc <= not mdc;
+        else 
+          counter <= counter - 1;
+        end if;
       end if;
-    end if;
-  end process;
+    end process;
+  end block;
 
-  r_data <= mdio_i & r_data(15 downto 1) when rising_edge(mdc);
+  r_data <= r_data(14 downto 0) & mdio_i when rising_edge(mdc);
 
   mdio_o <= '1' when global_cnt < 32 else
             '0' when global_cnt = 32 else
@@ -82,18 +86,21 @@ begin
             '0' when global_cnt = 34 and not read_flag else
             '0' when global_cnt = 35 and read_flag else
             '1' when global_cnt = 35 and not read_flag else
-            phy_addr_r(36 - global_cnt + 5) when global_cnt < 41 else
-            reg_addr_r(41 - global_cnt + 5) when global_cnt < 46 else
-            w_data(64 - global_cnt + 16) when global_cnt < 64 else
+            phy_addr_r(36 - global_cnt + 4) when global_cnt < 41 else
+            reg_addr_r(41 - global_cnt + 4) when global_cnt < 46 else
+            '0' when global_cnt = 46 or global_cnt = 47 else
+            w_data(48 - global_cnt + 15) when global_cnt < 64 else
             '0';
 
   mdio_t <= '0' when global_cnt < 47 else
             '1' when read_flag else
             '0';
 
+  busy <= '0' when global_cnt = 0 else '1';
+
   process(all)
   begin
-    if rising_edge(mdc) then
+    if falling_edge(mdc) then
       if read_flag and global_cnt = 63 then
         data_o <= r_data;
       end if;
@@ -117,7 +124,7 @@ begin
             state := running;
           end if;
         when running =>
-          if global_cnt < 64 then
+          if global_cnt < 63 then
             global_cnt <= global_cnt + 1;
           else
             global_cnt <= 0;

@@ -7,10 +7,10 @@ compile:
 	ghdl -a --std=08 $(NAME2).vhd
 	ghdl -e --std=08 $(NAME2)
 
-sim: bridge
-	ghdl -a --std=08 $(NAME)_tb.vhd
-	ghdl -e --std=08 $(NAME)_tb
-	ghdl -r --std=08 $(NAME)_tb --wave=$(NAME).ghw
+sim: compile
+#	ghdl -a --std=08 $(NAME)_tb.vhd
+#	ghdl -e --std=08 $(NAME)_tb
+#	ghdl -r --std=08 $(NAME)_tb --wave=$(NAME).ghw
 	ghdl -a --std=08 $(NAME2)_tb.vhd
 	ghdl -e --std=08 $(NAME2)_tb
 	ghdl -r --std=08 $(NAME2)_tb --wave=$(NAME2).ghw
