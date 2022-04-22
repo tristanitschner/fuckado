@@ -88,10 +88,10 @@ begin  -- rtl
         if (v_cy(i) = '1') or (v_compvl > conv_unsigned(9,4)) then
           if DWIDTH-i*4 > 2 then
             v_tmpda(DWIDTH downto i*4) := v_tmpda(DWIDTH-1 downto i*4) +
-                       conv_unsigned(6,v_tmpda(DWIDTH downto i*4)'LENGTH);
+                       conv_unsigned(6,DWIDTH + 1 - i*4);
           else
             v_tmpda(DWIDTH downto i*4) := v_tmpda(DWIDTH-1 downto i*4) +
-                       conv_unsigned(2,v_tmpda(DWIDTH downto i*4)'LENGTH);
+                       conv_unsigned(2,DWIDTH + 1 - i*4);
           end if;
         end if;
         -- An already set intermediate carry flag must not be lost.
@@ -122,10 +122,10 @@ begin  -- rtl
               -- Calculate the last nibble.
               if j=i then              
                 v_tmpda(DWIDTH downto j*4) := v_tmpda(DWIDTH-1 downto j*4) +
-                           conv_unsigned(6,v_tmpda(DWIDTH downto j*4)'LENGTH);
+                           conv_unsigned(6,DWIDTH + 1 - j*4);
               else
                 v_tmpda(DWIDTH downto j*4) := v_tmpda(DWIDTH-1 downto j*4) +
-                     conv_unsigned(v_nxtcy,v_tmpda(DWIDTH downto j*4)'LENGTH);
+                     conv_unsigned(v_nxtcy, DWIDTH + 1 - j*4);
               end if;
               -- An already set intermediate carry flag must not be lost.
               v_cy(j) := v_tmpda(DWIDTH) or v_cy(j);

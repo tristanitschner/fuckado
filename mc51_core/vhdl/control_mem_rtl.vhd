@@ -377,76 +377,147 @@ begin
 --          s_p2,ie,s_p3,ip,psw,acc,b,gprbit,ram_data_i
 -- outputs: s_reg_data, s_bit_data
 ------------------------------------------------------------------------------ 
- 
-  p_readram : process (s_preadr,s_p0,sp,dpl,dph,pcon,tcon,tmod,s_p1,scon,s_p2,
-                       ie,s_p3,ip,psw,acc,b,gprbit,ram_data_i,s_r0_b0,s_r1_b0,
-                       s_r0_b1,s_r1_b1,s_r0_b2,s_r1_b2,s_r0_b3,s_r1_b3,
-                       s_smod,s_sm0,s_sm1,s_sm2,s_ren,s_tb8,s_rb8,s_ti,s_ri,
-                       s_sbufi,s_th1,s_th0,s_ssel,s_tsel,s_tl1,s_tl0,
-		       ssel,tsel) 
-  begin  
-    if s_preadr(7)='1' then 
-      case conv_integer(s_preadr) is         -- read one byte of a SFR  
-            when 16#80# => s_reg_data <= unsigned(s_p0);  
-            when 16#81# => s_reg_data <= sp; 
-            when 16#82# => s_reg_data <= dpl; 
-            when 16#83# => s_reg_data <= dph; 
-            when 16#87# => 
-              s_reg_data(7) <= s_smod;
-              s_reg_data(6 downto 4) <= "000";
-              s_reg_data(3 downto 0) <= pcon;
-            when 16#88# => s_reg_data <= unsigned(tcon(s_tsel));
-            when 16#89# => s_reg_data <= unsigned(tmod(s_tsel));
-            when 16#8A# => s_reg_data <= s_tl0(s_tsel);
-            when 16#8B# => s_reg_data <= s_tl1(s_tsel);
-            when 16#8C# => s_reg_data <= s_th0(s_tsel);
-            when 16#8D# => s_reg_data <= s_th1(s_tsel);
-            when 16#8E# => s_reg_data <= tsel;             
-            when 16#90# => s_reg_data <= unsigned(s_p1); 
-            when 16#98# => 
-              s_reg_data(0) <= s_ri;    -- from SCON register 
-              s_reg_data(1) <= s_ti;    -- from SCON register                
-              s_reg_data(2) <= s_rb8;   -- read extern input!!! 
-              s_reg_data(3) <= s_tb8;   
-              s_reg_data(4) <= s_ren;   
-              s_reg_data(5) <= s_sm2;   
-              s_reg_data(6) <= s_sm1;   
-              s_reg_data(7) <= s_sm0;   
-            when 16#99# => s_reg_data <= s_sbufi(s_ssel);
-            when 16#9A# => s_reg_data <= ssel; 
-            when 16#A0# => s_reg_data <= unsigned(s_p2); 
-            when 16#A8# => s_reg_data <= unsigned(ie);
-            when 16#B0# => s_reg_data <= unsigned(s_p3); 
-            when 16#B8# => s_reg_data <= unsigned(ip);
-            when 16#D0# => s_reg_data <= unsigned(psw);
-            when 16#E0# => s_reg_data <= acc; 
-            when 16#F0# => s_reg_data <= b;     
-            when others => s_reg_data <= conv_unsigned(0,8); 
-          end case; 
-                                 -- read one byte to bitadressable GPR 
-    elsif conv_std_logic_vector(s_preadr(7 downto 4),4)="0010" then   
-            s_reg_data <= gprbit(conv_integer(s_preadr(3 downto 0)));  
-             
-    elsif conv_std_logic_vector(s_preadr,8)="00000000" then
-            s_reg_data <= s_r0_b0;     -- read R0 / Bank 0
-    elsif conv_std_logic_vector(s_preadr,8)="00000001" then
-            s_reg_data <= s_r1_b0;     -- read R1 / Bank 0
-    elsif conv_std_logic_vector(s_preadr,8)="00001000" then
-            s_reg_data <= s_r0_b1;     -- read R0 / Bank 1
-    elsif conv_std_logic_vector(s_preadr,8)="00001001" then
-            s_reg_data <= s_r1_b1;     -- read R1 / Bank 1
-    elsif conv_std_logic_vector(s_preadr,8)="00010000" then
-            s_reg_data <= s_r0_b2;     -- read R0 / Bank 2
-    elsif conv_std_logic_vector(s_preadr,8)="00010001" then
-            s_reg_data <= s_r1_b2;     -- read R1 / Bank 2
-    elsif conv_std_logic_vector(s_preadr,8)="00011000" then
-            s_reg_data <= s_r0_b3;     -- read R0 / Bank 3
-    elsif conv_std_logic_vector(s_preadr,8)="00011001" then
-            s_reg_data <= s_r1_b3;     -- read R1 / Bank 3
-     
-    else                               -- read on general purpose RAM 
-            s_reg_data <= unsigned(ram_data_i); 
-    end if; 
+
+  fix_for_ghdl: block is
+     signal s_reg_data_tmp : unsigned(7 downto 0);
+     signal s_bit_data_sel : unsigned(7 downto 0);
+     signal s_bit_data_tmp : std_logic;
+  begin
+     process (s_preadr, gprbit) is
+     begin
+        -- replaces the following expression in the subsequent process:
+        -- s_reg_data <= gprbit(conv_integer(s_preadr(3 downto 0)));  
+        -- NOTE: I had to make changes to the GHDL source and add some debug
+        -- output in order to make out the reason for GHDL inexplicable 
+        -- primary failure.
+        -- Tristan Itschner, April 2022
+        case s_preadr(3 downto 0) is
+           when x"0" => s_reg_data_tmp <= gprbit(16#0#);
+           when x"1" => s_reg_data_tmp <= gprbit(16#1#);
+           when x"2" => s_reg_data_tmp <= gprbit(16#2#);
+           when x"3" => s_reg_data_tmp <= gprbit(16#3#);
+           when x"4" => s_reg_data_tmp <= gprbit(16#4#);
+           when x"5" => s_reg_data_tmp <= gprbit(16#5#);
+           when x"6" => s_reg_data_tmp <= gprbit(16#6#);
+           when x"7" => s_reg_data_tmp <= gprbit(16#7#);
+           when x"8" => s_reg_data_tmp <= gprbit(16#8#);
+           when x"9" => s_reg_data_tmp <= gprbit(16#9#);
+           when x"a" => s_reg_data_tmp <= gprbit(16#a#);
+           when x"b" => s_reg_data_tmp <= gprbit(16#b#);
+           when x"c" => s_reg_data_tmp <= gprbit(16#c#);
+           when x"d" => s_reg_data_tmp <= gprbit(16#d#);
+           when x"e" => s_reg_data_tmp <= gprbit(16#e#);
+           when x"f" => s_reg_data_tmp <= gprbit(16#f#);
+           when others => s_reg_data_tmp <= (others => '0'); 
+               assert false report "unreachable" severity failure;
+        end case;
+        -- these two case statements replace the following expression in the subsequent process:
+        -- s_bit_data <= gprbit(conv_integer(s_preadr(6 downto 3))) 
+        --              (conv_integer(s_preadr(2 downto 0))); 
+        -- Tristan Itschner, April 2022
+        case s_preadr(6 downto 3) is
+           when x"0" => s_bit_data_sel <= gprbit(16#0#);
+           when x"1" => s_bit_data_sel <= gprbit(16#1#);
+           when x"2" => s_bit_data_sel <= gprbit(16#2#);
+           when x"3" => s_bit_data_sel <= gprbit(16#3#);
+           when x"4" => s_bit_data_sel <= gprbit(16#4#);
+           when x"5" => s_bit_data_sel <= gprbit(16#5#);
+           when x"6" => s_bit_data_sel <= gprbit(16#6#);
+           when x"7" => s_bit_data_sel <= gprbit(16#7#);
+           when x"8" => s_bit_data_sel <= gprbit(16#8#);
+           when x"9" => s_bit_data_sel <= gprbit(16#9#);
+           when x"a" => s_bit_data_sel <= gprbit(16#a#);
+           when x"b" => s_bit_data_sel <= gprbit(16#b#);
+           when x"c" => s_bit_data_sel <= gprbit(16#c#);
+           when x"d" => s_bit_data_sel <= gprbit(16#d#);
+           when x"e" => s_bit_data_sel <= gprbit(16#e#);
+           when x"f" => s_bit_data_sel <= gprbit(16#f#);
+           when others => s_bit_data_sel <= (others => '0'); 
+               assert false report "unreachable" severity failure;
+        end case;
+        case s_preadr(2 downto 0) is
+           when "000" => s_bit_data_tmp <= std_logic(s_bit_data_sel(2#000#));
+           when "001" => s_bit_data_tmp <= std_logic(s_bit_data_sel(2#001#));
+           when "010" => s_bit_data_tmp <= std_logic(s_bit_data_sel(2#010#));
+           when "011" => s_bit_data_tmp <= std_logic(s_bit_data_sel(2#011#));
+           when "100" => s_bit_data_tmp <= std_logic(s_bit_data_sel(2#100#));
+           when "101" => s_bit_data_tmp <= std_logic(s_bit_data_sel(2#101#));
+           when "110" => s_bit_data_tmp <= std_logic(s_bit_data_sel(2#110#));
+           when "111" => s_bit_data_tmp <= std_logic(s_bit_data_sel(2#111#));
+           when others => s_bit_data_tmp <= '0'; 
+               assert false report "unreachable" severity failure;
+        end case;
+     end process;
+
+     p_readram : process (s_preadr,s_p0,sp,dpl,dph,pcon,tcon,tmod,s_p1,scon,s_p2,
+        ie,s_p3,ip,psw,acc,b,gprbit,ram_data_i,s_r0_b0,s_r1_b0,
+        s_r0_b1,s_r1_b1,s_r0_b2,s_r1_b2,s_r0_b3,s_r1_b3,
+        s_smod,s_sm0,s_sm1,s_sm2,s_ren,s_tb8,s_rb8,s_ti,s_ri,
+        s_sbufi,s_th1,s_th0,s_ssel,s_tsel,s_tl1,s_tl0,
+        ssel,tsel) 
+     begin  
+        if s_preadr(7)='1' then 
+           case conv_integer(s_preadr) is         -- read one byte of a SFR  
+              when 16#80# => s_reg_data <= unsigned(s_p0);  
+              when 16#81# => s_reg_data <= sp; 
+              when 16#82# => s_reg_data <= dpl; 
+              when 16#83# => s_reg_data <= dph; 
+              when 16#87# => 
+                 s_reg_data(7) <= s_smod;
+                 s_reg_data(6 downto 4) <= "000";
+                 s_reg_data(3 downto 0) <= pcon;
+              when 16#88# => s_reg_data <= unsigned(tcon(s_tsel));
+              when 16#89# => s_reg_data <= unsigned(tmod(s_tsel));
+              when 16#8A# => s_reg_data <= s_tl0(s_tsel);
+              when 16#8B# => s_reg_data <= s_tl1(s_tsel);
+              when 16#8C# => s_reg_data <= s_th0(s_tsel);
+              when 16#8D# => s_reg_data <= s_th1(s_tsel);
+              when 16#8E# => s_reg_data <= tsel;             
+              when 16#90# => s_reg_data <= unsigned(s_p1); 
+              when 16#98# => 
+                 s_reg_data(0) <= s_ri;    -- from SCON register 
+                 s_reg_data(1) <= s_ti;    -- from SCON register                
+                 s_reg_data(2) <= s_rb8;   -- read extern input!!! 
+                 s_reg_data(3) <= s_tb8;   
+                 s_reg_data(4) <= s_ren;   
+                 s_reg_data(5) <= s_sm2;   
+                 s_reg_data(6) <= s_sm1;   
+                 s_reg_data(7) <= s_sm0;   
+              when 16#99# => s_reg_data <= s_sbufi(s_ssel);
+              when 16#9A# => s_reg_data <= ssel; 
+              when 16#A0# => s_reg_data <= unsigned(s_p2); 
+              when 16#A8# => s_reg_data <= unsigned(ie);
+              when 16#B0# => s_reg_data <= unsigned(s_p3); 
+              when 16#B8# => s_reg_data <= unsigned(ip);
+              when 16#D0# => s_reg_data <= unsigned(psw);
+              when 16#E0# => s_reg_data <= acc; 
+              when 16#F0# => s_reg_data <= b;     
+              when others => s_reg_data <= conv_unsigned(0,8); 
+           end case; 
+    -- read one byte to bitadressable GPR 
+        elsif conv_std_logic_vector(s_preadr(7 downto 4),4)="0010" then   
+           s_reg_data <= s_reg_data_tmp;  
+
+        elsif conv_std_logic_vector(s_preadr,8)="00000000" then
+           s_reg_data <= s_r0_b0;     -- read R0 / Bank 0
+        elsif conv_std_logic_vector(s_preadr,8)="00000001" then
+           s_reg_data <= s_r1_b0;     -- read R1 / Bank 0
+        elsif conv_std_logic_vector(s_preadr,8)="00001000" then
+           s_reg_data <= s_r0_b1;     -- read R0 / Bank 1
+        elsif conv_std_logic_vector(s_preadr,8)="00001001" then
+           s_reg_data <= s_r1_b1;     -- read R1 / Bank 1
+        elsif conv_std_logic_vector(s_preadr,8)="00010000" then
+           s_reg_data <= s_r0_b2;     -- read R0 / Bank 2
+        elsif conv_std_logic_vector(s_preadr,8)="00010001" then
+           s_reg_data <= s_r1_b2;     -- read R1 / Bank 2
+        elsif conv_std_logic_vector(s_preadr,8)="00011000" then
+           s_reg_data <= s_r0_b3;     -- read R0 / Bank 3
+        elsif conv_std_logic_vector(s_preadr,8)="00011001" then
+           s_reg_data <= s_r1_b3;     -- read R1 / Bank 3
+
+        else                               -- read on general purpose RAM 
+           s_reg_data <= unsigned(ram_data_i); 
+        end if; 
 
     if s_preadr(7)='1' then 
       case s_preadr(6 downto 3) is    -- read only one bit from a SFR 
@@ -470,10 +541,10 @@ begin
         when others => s_bit_data <= '0'; 
       end case; 
     else                               -- read one bit from bitadressable GP 
-            s_bit_data <= gprbit(conv_integer(s_preadr(6 downto 3))) 
-                          (conv_integer(s_preadr(2 downto 0)));  
+       s_bit_data <= s_bit_data_tmp;
     end if;           
   end process p_readram; 
+  end block;
 
 ------------------------------------------------------------------------------ 
 -- detect the rising/falling edge of interupt-sources
