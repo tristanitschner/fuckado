@@ -60,62 +60,38 @@ begin
     variable addr : integer;
     begin
       addr := to_integer(unsigned(s_mb_addr));
+      m_mb0_addr   <= (others => '0');
+      m_mb0_wrdata <= (others => '0');
+      m_mb0_we     <= '0';
+      m_mb1_addr   <= (others => '0');
+      m_mb1_wrdata <= (others => '0');
+      m_mb1_we     <= '0';
+      m_mb2_addr   <= (others => '0');
+      m_mb2_wrdata <= (others => '0');
+      m_mb2_we     <= '0';
+      m_mb3_addr   <= (others => '0');
+      m_mb3_wrdata <= (others => '0');
+      m_mb3_we     <= '0';
     if addr < addr1 then
       m_mb0_addr   <= std_logic_vector(to_unsigned(addr - 0, s_mb_addr'length));
       m_mb0_wrdata <= s_mb_wrdata;
       s_mb_rddata  <= m_mb0_rddata;
       m_mb0_we     <= s_mb_we;
-      m_mb1_addr   <= (others => '0');
-      m_mb1_wrdata <= (others => '0');
-      m_mb1_we     <= '0';
-      m_mb2_addr   <= (others => '0');
-      m_mb2_wrdata <= (others => '0');
-      m_mb2_we     <= '0';
-      m_mb3_addr   <= (others => '0');
-      m_mb3_wrdata <= (others => '0');
-      m_mb3_we     <= '0';
     elsif addr < addr2 then
       m_mb1_addr   <= std_logic_vector(to_unsigned(addr - addr1, s_mb_addr'length));
       m_mb1_wrdata <= s_mb_wrdata;
       s_mb_rddata  <= m_mb1_rddata;
       m_mb1_we     <= s_mb_we;
-      m_mb0_addr   <= (others => '0');
-      m_mb0_wrdata <= (others => '0');
-      m_mb0_we     <= '0';
-      m_mb2_addr   <= (others => '0');
-      m_mb2_wrdata <= (others => '0');
-      m_mb2_we     <= '0';
-      m_mb3_addr   <= (others => '0');
-      m_mb3_wrdata <= (others => '0');
-      m_mb3_we     <= '0';
     elsif addr < addr3 then
       m_mb2_addr   <= std_logic_vector(to_unsigned(addr - addr2, s_mb_addr'length));
       m_mb2_wrdata <= s_mb_wrdata;
       s_mb_rddata  <= m_mb2_rddata;
       m_mb2_we     <= s_mb_we;
-      m_mb0_addr   <= (others => '0');
-      m_mb0_wrdata <= (others => '0');
-      m_mb0_we     <= '0';
-      m_mb1_addr   <= (others => '0');
-      m_mb1_wrdata <= (others => '0');
-      m_mb1_we     <= '0';
-      m_mb3_addr   <= (others => '0');
-      m_mb3_wrdata <= (others => '0');
-      m_mb3_we     <= '0';
     else
       m_mb3_addr   <= std_logic_vector(to_unsigned(addr - addr3, s_mb_addr'length));
       m_mb3_wrdata <= s_mb_wrdata;
       s_mb_rddata  <= m_mb3_rddata;
       m_mb3_we     <= s_mb_we;
-      m_mb0_addr   <= (others => '0');
-      m_mb0_wrdata <= (others => '0');
-      m_mb0_we     <= '0';
-      m_mb1_addr   <= (others => '0');
-      m_mb1_wrdata <= (others => '0');
-      m_mb1_we     <= '0';
-      m_mb2_addr   <= (others => '0');
-      m_mb2_wrdata <= (others => '0');
-      m_mb2_we     <= '0';
     end if;
   end process;
 
