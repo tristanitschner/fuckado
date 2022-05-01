@@ -6,3 +6,9 @@ packet_holder:
 
 prove: 
 	sby --yosys "yosys -m ghdl" -f *sby prove
+
+bmc: 
+	sby --yosys "yosys -m ghdl" -f *sby bmc
+
+show:
+	$(GTKWAVE) 
