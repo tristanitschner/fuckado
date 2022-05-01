@@ -1,3 +1,6 @@
+-- SPDX-License-Identifier: GPL-3.0-or-later
+-- (c) Tristan Itschner 2022
+
 -- This shall implement the logic necessary to hold exactly one packet (or frag-
 -- ment). The idea is that two of these are compined in a pingpong buffer 
 -- fashion. When one complete packet is inside a holder, metadata maybe extracted
@@ -6,6 +9,7 @@
 -- purposes. Also the length of the packet is determined and can be appended
 -- to the start of the packet by the overlaying entity. Of course a stream
 -- arbiter is necessary.
+
 library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
@@ -46,7 +50,7 @@ entity packet_holder is
        );
 end;
 architecture a_packet_holder of packet_holder is 
-  signal storage : stream_array_t(max_packet_length - 1 downto 0);
+  signal storage : stream_array_t(max_packet_length - 1 downto 0) := (others => (others => '0'));
   type state_t is (empty, filling, filled, clearing);
   signal state : state_t;
   signal fillcount : integer range 0 to max_packet_length - 1;
@@ -69,9 +73,9 @@ begin
       elsif o_hs then
         fillcount <= fillcount - 1;
       end if;
-    end if;
-    if rst then
-      fillcount <= 0;
+      if rst then
+        fillcount <= 0;
+      end if;
     end if;
   end process;
 
@@ -83,9 +87,6 @@ begin
       end if;
     end if;
   end process;
-
-  -- read logic
-  o_stream <= storage(fillcount);
 
   main: process (all) is
   begin
@@ -125,5 +126,18 @@ begin
   i_ready <= '1' when state = empty or state = filling else '0';
   o_valid <= '1' when state = filled or state = clearing else '0';
   o_last <= '1' when state = clearing and fillcount = 0 else '0';
+
+  -- read logic
+  o_stream <= storage(to_integer(len) - fillcount - 1);
+
+  formal : block is
+    signal counter_packets_in : integer := 0;
+    signal counter_packets_out : integer := 0;
+  begin
+    default clock is rising_edge(clk);
+    counter_packets_in <= counter_packets_in + 1 when rising_edge(clk) and i_hs;
+    counter_packets_out <= counter_packets_out + 1 when rising_edge(clk) and o_hs;
+    assert always counter_packets_out = counter_packets_in + fillcount;
+  end block;
 
 end;

@@ -1,0 +1,22 @@
+[tasks]
+cover
+bmc
+prove
+
+[options]
+bmc: mode bmc
+bmc: depth 20
+cover: mode cover
+cover: depth 1000
+prove: mode prove
+prove: depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+read -sv packet_holder.v
+prep -top packet_holder
+
+[files]
+packet_holder.v
