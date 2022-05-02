@@ -10,5 +10,6 @@ prove:
 bmc: 
 	sby --yosys "yosys -m ghdl" -f *sby bmc
 
-show:
-	$(GTKWAVE) 
+cover: 
+	sby --yosys "yosys -m ghdl" -f *sby cover
+

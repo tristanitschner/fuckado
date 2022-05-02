@@ -7,7 +7,7 @@ prove
 bmc: mode bmc
 bmc: depth 20
 cover: mode cover
-cover: depth 1000
+cover: depth 2000
 prove: mode prove
 prove: depth 20
 
