@@ -36,23 +36,13 @@ reg [stream_w - 1 : 0] storage [max_packet_length - 1 : 0];
 localparam filling  = 0;
 localparam clearing = 1;
 reg state;
-reg [$clog2(max_packet_length) - 1:0] fillcount; 
+reg [$clog2(max_packet_length)-1:0] fillcount; 
 wire i_hs,o_hs;
-reg [$clog2(max_packet_length) - 1:0] len;
-reg error;
-reg error_packet_too_long_p;
-
-always @(posedge clk) error_packet_too_long_p <= error_packet_too_long;
+reg [$clog2(max_packet_length)-1:0] len;
+wire error;
 
 // self-recovery in case of error -> drop the packet
 // also separate drop functionality, in case the packet shall not be accepted
-always @(posedge clk) begin
-  if ((!error_packet_too_long_p && error_packet_too_long )||
-    (o_hs and drop))
-    error <= 1;
-  else
-    error <= 0;
-end
 
 assign i_hs = i_ready && i_valid;
 assign o_hs = o_ready && o_valid;
@@ -92,50 +82,50 @@ always @(posedge clk) begin
 end
 
 assign i_ready = (state == filling) ? 1 : 0;
-assign o_valid = (state == clearing) ? 1 : 0;
+assign o_valid = (state == clearing) && !(fillcount == 0)? 1 : 0; // do not allow reading from empty storage
 assign o_last = (state == clearing && fillcount == 1) ? 1 : 0;
 
 assign o_stream = storage[len - fillcount];
 
-// error logic
-always @(posedge clk) begin
-  if (i_hs && i_last && fillcount == max_packet_length - 1)
-    error_packet_too_long <= 1;
-  else if (clear_errors) 
-    error_packet_too_long <= 0;
-  if (rst)
-    error_packet_too_long <= 0;
-end
+// error logic -> silently drop the packet
+assign error = (fillcount == max_packet_length - 1) || drop;
+
+wire [$clog2(max_packet_length - 1):0] test;
+assign test = ((counter_packets_out + fillcount) % (max_packet_length));
+
 
 `ifdef FORMAL
-  reg [63:0] counter_packets_in = 0;
-  reg [63:0] counter_packets_out = 0;
+  reg [$clog2(max_packet_length)-1:0] counter_packets_in = 0;
+  reg [$clog2(max_packet_length)-1:0] counter_packets_out = 0;
 
   initial assume(rst);
-  initial assume(state == filling);
-  always assume (fillcount != 'hff); // for induction
+  // initial assume(state == filling);
+  initial assume (fillcount != max_packet_length - 1); // for induction
 
   reg [63:0] tickcount = 0;
   always @(posedge clk) tickcount <= tickcount + 1;
   wire done;
   assign done = tickcount > 30;
-  always @(posedge clk) if (tickcount > 3) rst = 0;
+  always @(posedge clk) if (tickcount > 3) assume(rst == 0);
   always @(posedge clk) cover (done);
+  always assume (fillcount < max_packet_length);
+  always assume (!clear_errors);
 
   always @(posedge clk) begin
     // no packets longer than max_packet_length
     if (fillcount == 'hfe && i_hs) assume (i_last);
 
-    if (error) counter_packets_in <= counter_packets_in - fillcount;
-    else if (i_hs) counter_packets_in <= counter_packets_in + 1;
-    if (o_hs) counter_packets_out <= counter_packets_out + 1;
+    if (error) counter_packets_in <= ((counter_packets_in - fillcount) % (max_packet_length));
+    else if (i_hs && !(fillcount == max_packet_length - 1)) counter_packets_in <= ((counter_packets_in + 1) % (max_packet_length));
+    if (o_hs && !error) counter_packets_out <= (counter_packets_out + 1) % (max_packet_length);
     if (rst) begin
       counter_packets_in <= 0;
       counter_packets_out <= 0;
     end
     if (!rst) begin
       // what goes in, must be the same, as what goes out
-      assert(counter_packets_in == counter_packets_out + fillcount);
+      //assert(counter_packets_in == ((counter_packets_out + fillcount) % (max_packet_length - 1)));
+      assert(counter_packets_in == test);
       // we are either writing, or reading, but never both at the same time
       if (i_hs) assert (!o_hs);
       if (o_hs) assert (!i_hs);
