@@ -1,3 +1,5 @@
+`define FORMAL 
+
 module axil_slave #(
   parameter axil_addr_width = 32,
   parameter axil_data_width = 32
@@ -12,7 +14,7 @@ module axil_slave #(
   output wire s_axi_wready,
   input  wire [axil_data_width-1:0]s_axi_wdata,
   input  wire [$clog2(axil_data_width)-1:0]s_axi_wstrb,
-  output wire s_axi_bvalid,
+  output reg s_axi_bvalid,
   input  wire s_axi_bready,
   output wire [1:0]s_axi_bresp,
   input  wire s_axi_arvalid,
@@ -43,6 +45,9 @@ localparam EXOKAY = 'b01;
 localparam SLVERR = 'b10;
 localparam DECERR = 'b11;
 
+assign s_axi_bresp = OKAY;
+assign s_axi_rresp = OKAY;
+
 // write logic
 reg [axil_addr_width-1:0]address_latched = 0;
 wire [axil_addr_width-1:0]address = awfire ? s_axi_awaddr : address_latched;
@@ -68,7 +73,7 @@ always @(posedge clk) begin
 end
 
 // prevent protocol errors (this is against the spec)
-assign s_axi_wready = (s_axi_wvalid && !awfire) ? 0 : !awstate;
+//assign s_axi_wready = (s_axi_wvalid && !awfire) ? 0 : !awstate;
 
 always @(posedge clk) begin
   if (wfire) begin
@@ -99,5 +104,105 @@ always @(posedge clk) begin
   end
   if (rfire) arstate <= 0;
 end
+
+reg [31:0] tickcount = 0;
+reg wfire_happened = 0;
+reg f_past_valid = 0;
+always @(posedge(clk)) f_past_valid <= 1;
+always @(posedge(clk)) tickcount <= tickcount + 1;
+always @(posedge(clk)) if (wfire) wfire_happened <= 1;
+
+`ifdef FORMAL
+  initial assume (rst);
+
+ //     if ($rose(s_axi_awvalid)) assume($stable(s_axi_awvalid));
+  reg awvalided = 0;
+  always @(posedge clk) begin
+    // this is in fact the least amount of logic required to say
+    // "once awvalid is asserted, it must stay asserted until the handshake
+    // occurs"
+    // (including dealing with back to back transfers)
+    if (s_axi_awvalid && !awfire) 
+      awvalided <= 1;
+    if (awvalided && awfire)
+      awvalided <= 0;
+    if (rst)
+      awvalided <= 0;
+    if (awvalided) assume(s_axi_awvalid);
+  end
+
+  reg wvalided = 0;
+  always @(posedge clk) begin
+    if (s_axi_wvalid && !wfire) 
+      wvalided <= 1;
+    if (wvalided && wfire)
+      wvalided <= 0;
+    if (rst)
+      wvalided <= 0;
+    if (wvalided) assume(s_axi_wvalid);
+  end
+
+  reg bvalided = 0;
+  always @(posedge clk) begin
+    if (s_axi_bvalid && !bfire) 
+      bvalided <= 1;
+    if (bvalided && bfire)
+      bvalided <= 0;
+    if (rst)
+      bvalided <= 0;
+    if (bvalided) assume(s_axi_bvalid);
+  end
+
+  reg arvalided = 0;
+  always @(posedge clk) begin
+    if (s_axi_arvalid && !arfire) 
+      arvalided <= 1;
+    if (arvalided && arfire)
+      arvalided <= 0;
+    if (rst)
+      arvalided <= 0;
+    if (arvalided) assume(s_axi_arvalid);
+  end
+
+  reg rvalided = 0;
+  always @(posedge clk) begin
+    if (s_axi_rvalid && !rfire) 
+      rvalided <= 1;
+    if (rvalided && rfire)
+      rvalided <= 0;
+    if (rst)
+      rvalided <= 0;
+    if (rvalided) assume(s_axi_rvalid);
+  end
+
+  always @(posedge clk) if(f_past_valid) assume(!rst);
+
+  always @(posedge clk)
+    if (!rst) begin
+      // Assumptions for master
+      // A3-38
+      // awvalid must stay asserted until awfire
+      //if (($rose(s_axi_awvalid) || $past(s_axi_awvalid)) && !(awfire)) assume($stable(s_axi_awvalid));
+      // A3-39
+      // same for wvalid
+ //     if (($rose(s_axi_wvalid) || $past(s_axi_wvalid)) && !(wfire)) assume($stable(s_axi_wvalid));
+      // bvalid must stay assebted
+//      if (($rose(s_axi_bvalid) || $past(s_axi_bvalid)) && !(bfire)) assume($stable(s_axi_bvalid));
+
+      // wlast must be asserted on thei last beat of a burst
+      //
+      // arvalid must stay asserted
+//      if (($rose(s_axi_arvalid) || $past(s_axi_arvalid)) && !(arfire)) assume($stable(s_axi_arvalid));
+      // rvalid must stay asserted
+//      if (($rose(s_axi_rvalid) || $past(s_axi_rvalid)) && !(rfire)) assume($stable(s_axi_rvalid));
+
+      // rlast -> todo
+    
+      //cover property ($stable(!rst));
+      cover property (tickcount == 100 && $past(s_axi_awvalid && !s_axi_awready));
+      //cover property (tickcount == 100 && $past(awfire) && awfire);
+    end
+
+`endif
 
 endmodule
