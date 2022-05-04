@@ -79,6 +79,7 @@ always @(posedge clk) begin
   if (wfire) begin
     wstate <= 1;
     // put write logic here, assert s_axi_bvalid when done and accordingly bresp
+    s_axi_bvalid <= 1;
   end
   if (wstate && bfire) begin
     wstate <= 0;
@@ -175,10 +176,52 @@ always @(posedge(clk)) if (wfire) wfire_happened <= 1;
     if (rvalided) assume(s_axi_rvalid);
   end
 
+  // TODO: does this support back to back transactions?
+  reg [15:0] arcnt,rcnt = 0;
+  always @(posedge clk) begin
+    if (arfire) arcnt <= arcnt + 1;
+    if (rfire) rcnt <= rcnt + 1;
+    if (rst) begin
+      arcnt <= 0;
+      rcnt <= 0;
+    end
+  end
+  always @(posedge clk) if (done) assume (arcnt == rcnt);
+
+  reg rvalidvalid = 0;
+  always @(posedge clk) begin
+    //if (arfire && !rfire) 
+    //  rvalidvalid <= 1;
+    //if (arcnt == rcnt)
+    //  rvalidvalid <= 0;
+    if (arcnt == rcnt) assume(!s_axi_rvalid);
+    //assume (arcnt >= rcnt);
+    //if (!rvalidvalid || arcnt == rcnt) assume(!s_axi_rvalid);
+  end 
+
+  reg [15:0] awcnt,wcnt,bcnt = 0;
+  always @(posedge clk) begin
+    if (awfire) awcnt <= awcnt + 1;
+    if (wfire) wcnt <= wcnt + 1;
+    if (bfire) bcnt <= bcnt + 1;
+    if (rst) begin
+      awcnt <= 0;
+      wcnt <= 0;
+      bcnt <= 0;
+    end
+  end
+  always @(posedge clk) if (done) assume (wcnt == awcnt && wcnt == bcnt);
+  always @(posedge clk) if (bcnt == wcnt) assume (!s_axi_bready);
+
   always @(posedge clk) if(f_past_valid) assume(!rst);
 
+  reg done = 0;
   always @(posedge clk)
     if (!rst) begin
+      done <= (tickcount == 30
+      && $past(s_axi_awvalid && !s_axi_awready)
+      && rcnt == 9
+      && wcnt == 9);
       // Assumptions for master
       // A3-38
       // awvalid must stay asserted until awfire
@@ -199,7 +242,7 @@ always @(posedge(clk)) if (wfire) wfire_happened <= 1;
       // rlast -> todo
     
       //cover property ($stable(!rst));
-      cover property (tickcount == 100 && $past(s_axi_awvalid && !s_axi_awready));
+      cover property (done);
       //cover property (tickcount == 100 && $past(awfire) && awfire);
     end
 
