@@ -1,0 +1,68 @@
+library ti;
+context ti.should_be_part_of_the_language_itself;
+
+entity fifo_fwft is 
+  generic (
+            type payload_t;
+            depth : natural := 256;
+            async_reset : boolean := false
+          );
+  port (
+         clk    : in  std_logic;
+         rst    : in  std_logic;
+         input  : in  payload_t;
+         output : out payload_t;
+         wr     : in  std_logic;
+         rd     : in  std_logic;
+         full   : out std_logic;
+         empty  : out std_logic
+       );
+  begin
+    assert is_power_of_two(depth);
+end;
+
+architecture a_fifo_fwft of fifo_fwft is 
+  signal rdptr,wrptr : natural;
+  type mem_t is array (natural range <>) of payload_t;
+  signal mem : mem_t(depth - 1 downto 0);
+  signal inverted : boolean := false;
+begin
+
+  output <= mem(rdptr);
+  empty <= '1' when rdptr = wrptr and not inverted else '0';
+  full  <= '1' when rdptr = wrptr and     inverted else '0';
+
+  process (all) is
+  begin
+    if rising_edge(clk) then
+      -- write logic
+      if wr and not full then
+        mem(wrptr) <= input;
+      end if;
+      -- logic for inverted
+      if wr and not full and rd and not empty then
+        null;
+      elsif wr and not full then
+        wrptr <= wrptr + 1 mod depth;
+        if wrptr + 1 mod depth = 0 then
+          inverted <= not inverted;
+        end if;
+      elsif rd and not empty then
+        rdptr <= rdptr + 1 mod depth;
+        if rdptr + 1 mod depth = 0 then
+          inverted <= not inverted;
+        end if;
+      end if;
+      -- reset logic
+      if not async_reset and rst = '1' then
+        rdptr <= 0; rdptr <= 0;
+        inverted <= false;
+      end if;
+    end if;
+    if async_reset and rst = '1' then
+      rdptr <= 0; rdptr <= 0;
+      inverted <= false;
+    end if;
+  end process;
+
+end;

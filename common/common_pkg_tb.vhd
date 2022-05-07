@@ -4,7 +4,9 @@ use ieee.std_logic_1164.all;
 
 use std.env.all;
 
-use work.common.all;
+library ti;
+context ti.should_be_part_of_the_language_itself;
+use ti.common.all;
 
 entity common_tb is 
 end;
@@ -35,7 +37,16 @@ begin
     assert(onehot("0010") = true);
     assert(onehot("1010") = false);
     assert(onehot("0000") = false);
+
+    -- test the is_power_of_two function
+    assert(is_power_of_two(2));
+    assert(is_power_of_two(4));
+    assert(is_power_of_two(16));
+    assert(is_power_of_two(256));
+    assert(is_power_of_two(3) = false);
+    assert(is_power_of_two(21341) = false);
     std.env.finish;
+    wait;
   end process;
 
 end;

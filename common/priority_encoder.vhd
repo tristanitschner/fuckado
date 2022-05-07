@@ -54,7 +54,7 @@ begin
         output <= (others => '0');
         temp := (others => '0');
         for i in inputs'reverse_range loop
-          if inputs(to_integer(unsigned(last_index)) + i mod n_inputs) then
+          if inputs(to_integer(unsigned(last_index)) + i + 1 mod n_inputs) then
             temp(i) := '1';
             output <= from_onehot(temp);
             exit;

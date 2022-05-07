@@ -12,6 +12,8 @@ package common is
   function to_onehot(x : std_logic_vector) return std_logic_vector;
   function from_onehot(x : std_logic_vector) return std_logic_vector;
   function onehot(x : std_logic_vector) return boolean;
+  function is_power_of_two(x : natural) return boolean;
+--function is_power_of_two(x : integer) return boolean; -- causes an error, if function is declared with natural
 
 end package;
 
@@ -69,4 +71,30 @@ package body common is
     end if;
   end function;
 
+  function is_power_of_two(x : natural) return boolean is
+    variable i : natural := 0;
+    variable ret : boolean := false;
+  begin
+    assert(x /= 0);
+    while true loop
+      i := i + 1;
+      if 2**i = x then
+        ret := true;
+      end if;
+      if 2**i > x then
+        exit;
+      end if;
+    end loop;
+    return ret;
+  end function;
+
 end package body;
+
+context should_be_part_of_the_language_itself is
+  library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+  use ieee.math_real.all;
+  library ti;
+  use ti.common.all;
+end context;
