@@ -1,0 +1,9 @@
+common components:
+
+* priority encoder with different scheduling schemes (purely combinatorial)
+  - round robin
+  - lowest index first (first come first served)
+  - separate combonent that respects priorities? -> extra priority signal needed (in case of equal priorities -> scheduling again needed)
+* multiply
+  - by repeated addition
+  - newton raphson
