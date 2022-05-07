@@ -23,8 +23,8 @@ end;
 
 architecture a_fifo_fwft of fifo_fwft is 
   signal rdptr,wrptr : natural;
-  type mem_t is array (natural range <>) of payload_t;
-  signal mem : mem_t(depth - 1 downto 0);
+  type mem_t is array (depth-1 downto 0) of payload_t;
+  signal mem : mem_t;
   signal inverted : boolean := false;
 begin
 

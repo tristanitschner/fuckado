@@ -1,8 +1,7 @@
 common:
-	ghdl -a --work=ti --workdir=../libs --std=08 common_pkg.vhd
-	ghdl -a --work=ti --workdir=../libs --std=08 priority_encoder.vhd
-	ghdl -a --work=ti --workdir=../libs --std=08 fifo_fwft.vhd
-
+	ghdl -a --std=08 --work=ti --workdir=../libs common_pkg.vhd
+	ghdl -a --std=08 --work=ti --workdir=../libs priority_encoder.vhd
+	ghdl -a --std=08 --work=ti --workdir=../libs fifo_fwft.vhd
 
 common_test: common
 	ghdl -a -P../libs --std=08 common_pkg_tb.vhd
@@ -11,7 +10,7 @@ common_test: common
 
 fwft_test: common
 	ghdl -a --std=08 -P../libs fifo_fwft_tb.vhd
-	ghdl -e --std=08 -P../libs fifo_fwft_tb
 	ghdl -m --std=08 -P../libs fifo_fwft_tb
+	ghdl -r --std=08 -P../libs fifo_fwft_tb
 
 test: common_test fwft_test

@@ -5,7 +5,6 @@ entity fifo_fwft_tb is
 end;
 
 architecture a_fifo_fwft_tb of fifo_fwft_tb is 
-  subtype mypayload_t is unsigned(7 downto 0);
 
   constant clk_period : time := 10 ns;
 
@@ -63,7 +62,7 @@ begin
 
   dut: entity ti.fifo_fwft
   generic map (
-            payload_t => mypayload_t
+            payload_t => unsigned(7 downto 0)
           )
  port          map (
          clk    =>  clk,
