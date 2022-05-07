@@ -1,0 +1,22 @@
+axil slave interface:
+         s_axi_aclk    : in  std_logic;
+         s_axi_aresetn : in  std_logic;
+         s_axi_awvalid : in  std_logic;
+         s_axi_awready : out std_logic;
+         s_axi_awaddr  : in  std_logic_vector(addr_width-1 downto 0);
+         s_axi_awprot  : in  std_logic_vector(2 downto 0);
+         s_axi_wvalid  : in  std_logic;
+         s_axi_wready  : out std_logic;
+         s_axi_wdata   : in  std_logic_vector(data_width-1 downto 0);
+         s_axi_wstrb   : in  std_logic_vector(clog2(data_width)-1 downto 0);
+         s_axi_bvalid  : out std_logic;
+         s_axi_bready  : in  std_logic;
+         s_axi_bresp   : out std_logic_vector(1 downto 0);
+         s_axi_arvalid : in  std_logic;
+         s_axi_arready : out std_logic;
+         s_axi_araddr  : in  std_logic_vector(addr_width-1 downto 0);
+         s_axi_arprot  : in  std_logic_vector(2 downto 0);
+         s_axi_rvalid  : out std_logic;
+         s_axi_rready  : in  std_logic;
+         s_axi_rdata   : out std_logic_vector(data_width-1 downto 0);
+         s_axi_rresp   : out std_logic_vector(1 downto 0)
