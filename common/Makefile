@@ -2,6 +2,7 @@ common:
 	ghdl -a --std=08 --work=ti --workdir=../libs common_pkg.vhd
 	ghdl -a --std=08 --work=ti --workdir=../libs priority_encoder.vhd
 	ghdl -a --std=08 --work=ti --workdir=../libs fifo_fwft.vhd
+	ghdl -a --std=08 --work=ti --workdir=../libs skidbuffer.vhd
 
 common_test: common
 	ghdl -a -P../libs --std=08 common_pkg_tb.vhd
@@ -13,4 +14,9 @@ fwft_test: common
 	ghdl -m --std=08 -P../libs fifo_fwft_tb
 	ghdl -r --std=08 -P../libs fifo_fwft_tb --wave=fifo_fwft_tb.ghw
 
-test: common_test fwft_test
+skidbuffer_test: common
+	ghdl -a --std=08 -P../libs skidbuffer_tb.vhd
+	ghdl -m --std=08 -P../libs skidbuffer_tb
+	ghdl -r --std=08 -P../libs skidbuffer_tb --wave=skidbuffer_tb.ghw
+
+test: common_test fwft_test skidbuffer_test
