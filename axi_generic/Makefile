@@ -22,3 +22,7 @@ axi_pkg_test: axi_pkg
 	ghdl -a --std=08 --work=ti --workdir=../libs axi_pkg_tb.vhd
 	ghdl -m --std=08 --work=ti --workdir=../libs axi_pkg_tb
 	ghdl -r --std=08 --work=ti --workdir=../libs axi_pkg_tb --wave=axi_pkg_tb.ghw
+
+axi_skidbuffer: axi_pkg
+	ghdl -a --std=08 --work=ti --workdir=../libs axi_skidbuffer.vhd
+	ghdl -m --std=08 --work=ti --workdir=../libs axi_skidbuffer
