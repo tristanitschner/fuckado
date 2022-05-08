@@ -38,6 +38,13 @@ type axil_r_t is record
   resp   : std_logic_vector(1 downto 0);
 end record;
 
+-- these give the length of the payload
+function axil_aw_len(addr_width : natural) return natural;
+function axil_w_len(data_width : natural) return natural;
+function axil_b_len return natural;
+function axil_ar_len(addr_width : natural) return natural;
+function axil_r_len(data_width : natural) return natural;
+
 function axil_aw_ser(x : axil_aw_t) return std_logic_vector;
 function axil_aw_des(x : std_logic_vector; addr_width : natural) return axil_aw_t;
 function axil_w_ser (x : axil_w_t)  return std_logic_vector;
@@ -93,6 +100,14 @@ type axi_r_t is record
   id     : std_logic_vector;
   user   : std_logic_vector;
 end record;
+
+-- these give the length of the payload
+function axi_aw_len(conf : axi_config_t) return natural;
+function axi_w_len(conf  : axi_config_t) return natural;
+function axi_b_len(conf  : axi_config_t) return natural;
+function axi_ar_len(conf : axi_config_t) return natural;
+function axi_r_len(conf  : axi_config_t) return natural;
+
 function axi_aw_ser(x : axi_aw_t) return std_logic_vector;
 function axi_aw_des(x : std_logic_vector; conf : axi_config_t) return axi_aw_t;
 function axi_w_ser (x : axi_w_t)  return std_logic_vector;
@@ -123,6 +138,51 @@ package body axi is
          x.data_width = 512 or
          x.data_width = 1024);
   end function;
+
+  -- so you know what size of std_logic_vector you need:
+  function axil_aw_len(addr_width : natural) return natural is 
+  begin
+    return 3 + addr_width;
+  end function;
+  function axil_w_len(data_width : natural) return natural is
+  begin
+    return 4 + data_width;
+  end function;
+  function axil_b_len return natural is
+  begin
+    return 2;
+  end function;
+  function axil_ar_len(addr_width : natural) return natural is
+  begin
+    return 3 + addr_width;
+  end function;
+  function axil_r_len(data_width : natural) return natural is
+  begin
+    return 2 + data_width;
+  end function;
+
+  -- axi: so you know what size of std_logic_vector you need:
+  function axi_aw_len(addr_width : natural) return natural is 
+  begin
+    return 3 + addr_width;
+  end function;
+  function axi_w_len(data_width : natural) return natural is
+  begin
+    return 4 + data_width;
+  end function;
+  function axi_b_len return natural is
+  begin
+    return 2;
+  end function;
+  function axi_ar_len(addr_width : natural) return natural is
+  begin
+    return 3 + addr_width;
+  end function;
+  function axi_r_len(data_width : natural) return natural is
+  begin
+    return 2 + data_width;
+  end function;
+
 
   -- axil serdes functions:
   function axil_aw_ser(x : axil_aw_t) return std_logic_vector is
@@ -192,6 +252,28 @@ package body axi is
     retval.data := x(x'high downto x'length - data_width);
     retval.resp := x(1 downto 0);
     return retval;
+  end function;
+
+-- these give the length of the payload
+  function axi_aw_len(conf : axi_config_t) return natural is
+  begin
+    return conf.addr_width + 3 + 2 + 4 + 3 + conf.id_width + 8 + 1 + 4 + 4 + conf.user_width;
+  end function;
+  function axi_w_len(conf  : axi_config_t) return natural is
+  begin
+    return 1 + conf.data_width + conf.strb_width + conf.user_width;
+  end function;
+  function axi_b_len(conf  : axi_config_t) return natural is
+  begin
+    return 2 + conf.id_width + conf.user_width;
+  end function;
+  function axi_ar_len(conf : axi_config_t) return natural is
+  begin
+    return conf.addr_width + 3 + 2 + 4 + 3 + conf.id_width + 8 + 1 + 4 + 4 + conf.user_width;
+  end function;
+  function axi_r_len(conf  : axi_config_t) return natural is 
+  begin
+    return 1 + conf.data_width + 2 + conf.id_width + conf.user_width;
   end function;
 
   -- axi serdes functions:
