@@ -4,6 +4,9 @@ use ieee.std_logic_1164.all;
 
 use ieee.math_real.all;
 
+library ti;
+use ti.common_globals.all;
+
 package common is
   type sched_scheme_t is (round_robin, lowest_index_first);
 
@@ -14,8 +17,10 @@ package common is
   function onehot(x : std_logic_vector) return boolean;
   function is_power_of_two(x : natural) return boolean;
 --function is_power_of_two(x : integer) return boolean; -- causes an error, if function is declared with natural
-  function rand return std_logic;
-  function rand(len : natural) return std_logic_vector;
+  impure function rand return std_logic;
+  impure function rand(len : natural) return std_logic_vector;
+
+  shared variable globals : globals_t;
 
 end package;
 
@@ -90,18 +95,24 @@ package body common is
     return ret;
   end function;
 
-  function rand return std_logic is
-    variable seed1 : integer := 4321;
-    variable seed2 : integer := 8321;
+  impure function rand return std_logic is
+    variable seed1 : integer := 21;
+    variable seed2 : integer := 24;
     variable random : real;
     variable ret : std_logic;
   begin
+    -- this is some of the most bs code I ever wrote...
+    seed1 := globals.seed1_get;
+    seed2 := globals.seed2_get;
     uniform(seed1,seed2,random);
+    globals.seed1_set(seed1);
+    globals.seed2_set(seed2);
+    -- report "generated" & real'image(random);
     ret := '1' when random > 0.5 else '0';
     return ret; 
   end function;
 
-  function rand(len : natural) return std_logic_vector is
+  impure function rand(len : natural) return std_logic_vector is
     variable ret : std_logic_vector(len - 1 downto 0);
   begin
     for i in ret'range loop
