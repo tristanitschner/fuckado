@@ -5,6 +5,10 @@ common:
 	ghdl -a --std=08 --work=ti --workdir=../libs fifo_fwft.vhd
 	ghdl -a --std=08 --work=ti --workdir=../libs skidbuffer.vhd
 
+synth: common
+	ghdl -m --std=08 --work=ti --workdir=../libs skidbuffer
+	ghdl --synth --std=08 --work=ti --workdir=../libs skidbuffer
+
 common_test: common
 	ghdl -a -P../libs --std=08 common_pkg_tb.vhd
 	ghdl -e -P../libs --std=08 common_tb

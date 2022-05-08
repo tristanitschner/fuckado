@@ -1,5 +1,5 @@
 library ti;
-context ti.should_be_part_of_the_language_itself;
+context ti.should_be_part_of_the_language_itself_for_simulation;
 
 use std.env.all;
 

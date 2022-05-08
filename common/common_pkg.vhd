@@ -1,11 +1,50 @@
 library ieee;
-use ieee.numeric_std.all;
-use ieee.std_logic_1164.all;
-
+context ieee.ieee_std_context;
 use ieee.math_real.all;
 
 library ti;
 use ti.common_globals.all;
+
+package common_sim is
+  impure function rand return std_logic;
+  impure function rand(len : natural) return std_logic_vector;
+
+  shared variable globals : globals_t;
+end package;
+
+package body common_sim is
+  impure function rand return std_logic is
+    variable seed1 : integer := 21;
+    variable seed2 : integer := 24;
+    variable random : real;
+    variable ret : std_logic;
+  begin
+    -- this is some of the most bs code I ever wrote...
+    seed1 := globals.seed1_get;
+    seed2 := globals.seed2_get;
+    uniform(seed1,seed2,random);
+    globals.seed1_set(seed1);
+    globals.seed2_set(seed2);
+    -- report "generated" & real'image(random);
+    ret := '1' when random > 0.5 else '0';
+    return ret; 
+  end function;
+
+  impure function rand(len : natural) return std_logic_vector is
+    variable ret : std_logic_vector(len - 1 downto 0);
+  begin
+    for i in ret'range loop
+      ret(i) := rand;
+    end loop;
+    return ret;
+  end function;
+end package body;
+
+--------------------------------------------------------------------------------
+
+library ieee;
+context ieee.ieee_std_context;
+use ieee.math_real.all;
 
 package common is
   type sched_scheme_t is (round_robin, lowest_index_first);
@@ -17,10 +56,6 @@ package common is
   function onehot(x : std_logic_vector) return boolean;
   function is_power_of_two(x : natural) return boolean;
 --function is_power_of_two(x : integer) return boolean; -- causes an error, if function is declared with natural
-  impure function rand return std_logic;
-  impure function rand(len : natural) return std_logic_vector;
-
-  shared variable globals : globals_t;
 
 end package;
 
@@ -95,39 +130,19 @@ package body common is
     return ret;
   end function;
 
-  impure function rand return std_logic is
-    variable seed1 : integer := 21;
-    variable seed2 : integer := 24;
-    variable random : real;
-    variable ret : std_logic;
-  begin
-    -- this is some of the most bs code I ever wrote...
-    seed1 := globals.seed1_get;
-    seed2 := globals.seed2_get;
-    uniform(seed1,seed2,random);
-    globals.seed1_set(seed1);
-    globals.seed2_set(seed2);
-    -- report "generated" & real'image(random);
-    ret := '1' when random > 0.5 else '0';
-    return ret; 
-  end function;
-
-  impure function rand(len : natural) return std_logic_vector is
-    variable ret : std_logic_vector(len - 1 downto 0);
-  begin
-    for i in ret'range loop
-      ret(i) := rand;
-    end loop;
-    return ret;
-  end function;
-
 end package body;
 
 context should_be_part_of_the_language_itself is
   library ieee;
-  use ieee.std_logic_1164.all;
-  use ieee.numeric_std.all;
-  use ieee.math_real.all;
+  context ieee.ieee_std_context;
   library ti;
   use ti.common.all;
+end context;
+
+context should_be_part_of_the_language_itself_for_simulation is
+  library ieee;
+  context ieee.ieee_std_context;
+  library ti;
+  use ti.common.all;
+  use ti.common_sim.all;
 end context;

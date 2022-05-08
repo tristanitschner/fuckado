@@ -3,7 +3,7 @@ context ti.should_be_part_of_the_language_itself;
 
 entity skidbuffer is 
   generic (
-            width : natural;
+            width : natural := 31;
             async_reset : boolean := false
           );
   port (
