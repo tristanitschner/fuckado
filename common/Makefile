@@ -11,6 +11,6 @@ common_test: common
 fwft_test: common
 	ghdl -a --std=08 -P../libs fifo_fwft_tb.vhd
 	ghdl -m --std=08 -P../libs fifo_fwft_tb
-	ghdl -r --std=08 -P../libs fifo_fwft_tb
+	ghdl -r --std=08 -P../libs fifo_fwft_tb --wave=fifo_fwft_tb.ghw
 
 test: common_test fwft_test

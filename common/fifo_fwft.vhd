@@ -3,15 +3,15 @@ context ti.should_be_part_of_the_language_itself;
 
 entity fifo_fwft is 
   generic (
-            type payload_t;
+            width : natural := 8;
             depth : natural := 256;
             async_reset : boolean := false
           );
   port (
          clk    : in  std_logic;
          rst    : in  std_logic;
-         input  : in  payload_t;
-         output : out payload_t;
+         input  : in  std_logic_vector(width-1 downto 0);
+         output : out std_logic_vector(width-1 downto 0);
          wr     : in  std_logic;
          rd     : in  std_logic;
          full   : out std_logic;
@@ -19,11 +19,12 @@ entity fifo_fwft is
        );
   begin
     assert is_power_of_two(depth);
+    assert is_power_of_two(width);
 end;
 
 architecture a_fifo_fwft of fifo_fwft is 
   signal rdptr,wrptr : natural;
-  type mem_t is array (depth-1 downto 0) of payload_t;
+  type mem_t is array (depth-1 downto 0) of std_logic_vector(width-1 downto 0);
   signal mem : mem_t;
   signal inverted : boolean := false;
 begin
@@ -43,13 +44,13 @@ begin
       if wr and not full and rd and not empty then
         null;
       elsif wr and not full then
-        wrptr <= wrptr + 1 mod depth;
-        if wrptr + 1 mod depth = 0 then
+        wrptr <= (wrptr + 1) mod depth;
+        if (wrptr + 1) mod depth = 0 then
           inverted <= not inverted;
         end if;
       elsif rd and not empty then
-        rdptr <= rdptr + 1 mod depth;
-        if rdptr + 1 mod depth = 0 then
+        rdptr <= (rdptr + 1) mod depth;
+        if (rdptr + 1) mod depth = 0 then
           inverted <= not inverted;
         end if;
       end if;

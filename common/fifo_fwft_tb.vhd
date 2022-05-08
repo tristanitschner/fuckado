@@ -1,6 +1,8 @@
 library ti;
 context ti.should_be_part_of_the_language_itself;
 
+use std.env.all;
+
 entity fifo_fwft_tb is 
 end;
 
@@ -8,10 +10,10 @@ architecture a_fifo_fwft_tb of fifo_fwft_tb is
 
   constant clk_period : time := 10 ns;
 
-  signal clk    : std_logic;
+  signal clk    : std_logic := '1';
   signal rst    : std_logic;
-  signal input  : unsigned(7 downto 0);
-  signal output : unsigned(7 downto 0);
+  signal input  : std_logic_vector(7 downto 0);
+  signal output : std_logic_vector(7 downto 0);
   signal wr     : std_logic;
   signal rd     : std_logic;
   signal full   : std_logic;
@@ -30,12 +32,13 @@ begin
 
   process is
     procedure write (
-                      data : unsigned(7 downto 0)
+                      data : std_logic_vector(7 downto 0)
                    ) is 
     begin
       input <= data;
       wr <= '1';
       wait until clk;
+      wr <= '0';
     end procedure;
   begin
     rd <= '0';
@@ -43,26 +46,36 @@ begin
     assert(empty = '1');
     assert(full = '0');
     for i in 0 to 10 loop
-      write(to_unsigned(i, 8));
+      write(std_logic_vector(to_unsigned(i, 8)));
     end loop;
     assert(empty = '0');
     assert(full = '0');
     rd <= '1';
+    wait until clk;
     for i in 0 to 10 loop
-      assert(output = to_unsigned(i, 8));
-      wait until clk;
+      assert(output = std_logic_vector(to_unsigned(i, 8)));
+      if i = 10 then
+        exit;
+      end if;
+      wait_cycles(1);
     end loop;
+    rd <= '0';
+    wait_cycles(1);
     assert(empty = '1');
     for i in 0 to 255 loop
-      write(to_unsigned(i mod 256, 8));
+      write(std_logic_vector(to_unsigned(i mod 256, 8)));
     end loop;
+    wait_cycles(1);
     assert(empty = '0');
     assert(full = '1');
+    wait_cycles(10);
+    std.env.finish;
+    wait;
   end process;
 
   dut: entity ti.fifo_fwft
   generic map (
-            payload_t => unsigned(7 downto 0)
+                width => 8
           )
  port          map (
          clk    =>  clk,
