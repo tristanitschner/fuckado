@@ -18,7 +18,6 @@ library work;
 entity ti_axil_datamover_s2mm is 
   generic (
             data_width : integer := 32; -- this is identical for stream and axil
-            stb_width : integer := 4; -- this is identical for stream and axil
             addr_width : integer := 32;
             mode_indeterminate : boolean := false
           );
@@ -35,7 +34,7 @@ entity ti_axil_datamover_s2mm is
          m_axil_wvalid  : out std_logic;
          m_axil_wready  : in  std_logic;
          m_axil_wdata   : out std_logic_vector(data_width-1 downto 0);
-         m_axil_wstrb   : out std_logic_vector(stb_width-1 downto 0);
+         m_axil_wstrb   : out std_logic_vector(4-1 downto 0);
          m_axil_bvalid  : in  std_logic;
          m_axil_bready  : out std_logic;
          m_axil_bresp   : in  std_logic_vector(1 downto 0);
@@ -63,6 +62,9 @@ entity ti_axil_datamover_s2mm is
        -- most sigificant 32 bits: address to write to
        -- least siginificant 32 bits: number of beats to wirte to that address
        );
+begin
+  assert(data_width = 32 or data_width = 64);
+  -- TODO: what does the standard say about the addr_width?
 end;
 architecture a_ti_axil_datamover_s2mm of ti_axil_datamover_s2mm is 
   signal c_address : unsigned(data_width-1 downto 0);
@@ -76,11 +78,11 @@ architecture a_ti_axil_datamover_s2mm of ti_axil_datamover_s2mm is
   signal s_axis_fire : std_logic;
   signal s_axis_c_fire : std_logic;
 
--- response values
-constant OKAY   : std_logic_vector := "00";
-constant EXOKAY : std_logic_vector := "01";
-constant SLVERR : std_logic_vector := "10";
-constant DECERR : std_logic_vector := "11";
+  -- response values
+  constant OKAY   : std_logic_vector := "00";
+  constant EXOKAY : std_logic_vector := "01";
+  constant SLVERR : std_logic_vector := "10";
+  constant DECERR : std_logic_vector := "11";
 
 begin
 
