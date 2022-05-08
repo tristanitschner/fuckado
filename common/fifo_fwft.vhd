@@ -8,14 +8,15 @@ entity fifo_fwft is
             async_reset : boolean := false
           );
   port (
-         clk    : in  std_logic;
-         rst    : in  std_logic;
-         input  : in  std_logic_vector(width-1 downto 0);
-         output : out std_logic_vector(width-1 downto 0);
-         wr     : in  std_logic;
-         rd     : in  std_logic;
-         full   : out std_logic;
-         empty  : out std_logic
+         clk       : in  std_logic;
+         rst       : in  std_logic;
+         input     : in  std_logic_vector(width-1 downto 0);
+         output    : out std_logic_vector(width-1 downto 0);
+         wr        : in  std_logic; -- replace by valid TODO
+         rd        : in  std_logic; -- replace by ready
+         full      : out std_logic; -- replace by not ready
+         empty     : out std_logic; -- replace by not valid
+         fillcount : out std_logic_vector(clog2(depth)-1 downto 0)
        );
   begin
     assert is_power_of_two(depth);
@@ -29,6 +30,7 @@ architecture a_fifo_fwft of fifo_fwft is
   signal inverted : boolean := false;
 begin
 
+  fillcount <= std_logic_vector(to_unsigned((wrptr - rdptr) mod depth, clog2(depth)));
   output <= mem(rdptr);
   empty <= '1' when rdptr = wrptr and not inverted else '0';
   full  <= '1' when rdptr = wrptr and     inverted else '0';

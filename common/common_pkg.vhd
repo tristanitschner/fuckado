@@ -14,6 +14,8 @@ package common is
   function onehot(x : std_logic_vector) return boolean;
   function is_power_of_two(x : natural) return boolean;
 --function is_power_of_two(x : integer) return boolean; -- causes an error, if function is declared with natural
+  function rand return std_logic;
+  function rand(len : natural) return std_logic_vector;
 
 end package;
 
@@ -84,6 +86,26 @@ package body common is
       if 2**i > x then
         exit;
       end if;
+    end loop;
+    return ret;
+  end function;
+
+  function rand return std_logic is
+    variable seed1 : integer := 4321;
+    variable seed2 : integer := 8321;
+    variable random : real;
+    variable ret : std_logic;
+  begin
+    uniform(seed1,seed2,random);
+    ret := '1' when random > 0.5 else '0';
+    return ret; 
+  end function;
+
+  function rand(len : natural) return std_logic_vector is
+    variable ret : std_logic_vector(len - 1 downto 0);
+  begin
+    for i in ret'range loop
+      ret(i) := rand;
     end loop;
     return ret;
   end function;

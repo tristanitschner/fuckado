@@ -25,29 +25,10 @@ begin
   rst <= '1','0' after 5*clk_period;
 
   process is
-    variable rand1,rand2 : integer := 43212;
-    impure function rand return std_logic is
-    variable res : real;
-    variable ret : std_logic;
-    begin
-      uniform(rand1,rand2,res);
-      ret := '1' when res > 0.5 else '0';
-      return ret;
-    end function;
-    impure function rand return std_logic_vector is
-    variable res : real;
-    variable ret : std_logic_vector(7 downto 0);
-    begin
-      for i in ret'range loop
-        uniform(rand1,rand2,res);
-        ret(i) := '1' when res > 0.5 else '0';
-      end loop;
-      return ret;
-    end function;
   begin
     wait until not rst;
     for i in 0 to 100 loop
-         input   <= rand;
+         input   <= rand(input'length);
          i_valid <= rand;
          o_ready <= rand;
          wait until clk;

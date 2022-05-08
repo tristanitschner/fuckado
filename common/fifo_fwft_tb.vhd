@@ -10,14 +10,15 @@ architecture a_fifo_fwft_tb of fifo_fwft_tb is
 
   constant clk_period : time := 10 ns;
 
-  signal clk    : std_logic := '1';
-  signal rst    : std_logic;
-  signal input  : std_logic_vector(7 downto 0);
-  signal output : std_logic_vector(7 downto 0);
-  signal wr     : std_logic;
-  signal rd     : std_logic;
-  signal full   : std_logic;
-  signal empty  : std_logic;
+  signal clk       : std_logic := '1';
+  signal rst       : std_logic;
+  signal input     : std_logic_vector(7 downto 0);
+  signal output    : std_logic_vector(7 downto 0);
+  signal wr        : std_logic;
+  signal rd        : std_logic;
+  signal full      : std_logic;
+  signal empty     : std_logic;
+  signal fillcount : std_logic_vector(clog2(256)-1 downto 0);
 
   procedure wait_cycles(x: natural) is
   begin
@@ -50,6 +51,7 @@ begin
     end loop;
     assert(empty = '0');
     assert(full = '0');
+    assert(to_integer(unsigned(fillcount)) = 10);
     rd <= '1';
     wait until clk;
     for i in 0 to 10 loop
@@ -61,6 +63,7 @@ begin
     end loop;
     rd <= '0';
     wait_cycles(1);
+    assert(to_integer(unsigned(fillcount)) = 0);
     assert(empty = '1');
     for i in 0 to 255 loop
       write(std_logic_vector(to_unsigned(i mod 256, 8)));
@@ -68,6 +71,7 @@ begin
     wait_cycles(1);
     assert(empty = '0');
     assert(full = '1');
+    assert(to_integer(unsigned(fillcount)) = 0);
     wait_cycles(10);
     std.env.finish;
     wait;
@@ -76,16 +80,17 @@ begin
   dut: entity ti.fifo_fwft
   generic map (
                 width => 8
-          )
- port          map (
-         clk    =>  clk,
-         rst    =>  rst,
-         input  =>  input,
-         output =>  output,
-         wr     =>  wr,
-         rd     =>  rd,
-         full   =>  full,
-         empty  =>  empty
-       );
+              )
+  port map (
+             clk       => clk,
+             rst       => rst,
+             input     => input,
+             output    => output,
+             wr        => wr,
+             rd        => rd,
+             full      => full,
+             empty     => empty,
+             fillcount => fillcount
+           );
 
 end;
