@@ -3,8 +3,9 @@ context ti.should_be_part_of_the_language_itself;
 
 entity bus_width_resizer is 
   generic (
-            input_bus_width : natural;
-            output_bus_width : natural
+            input_bus_width  : natural;
+            output_bus_width : natural;
+            debug : boolean := true
           );
   port (
          clk : in std_logic;
@@ -56,9 +57,14 @@ begin
                  '1' when count = 0 and (active or (i_valid and i_ready)) = '1' else
                  '1' when count /= 0 else
                  '0';
-      output <= input(output_bus_width-1 downto 0) when (i_ready and i_valid) = '1' and count = 0 else
-                storage(count) when active else
-                (others => '0'); -- could be removed to save logic
+      ds_output_gen: if debug generate
+        output <= input(output_bus_width-1 downto 0) when (i_ready and i_valid) = '1' and count = 0 else
+                  storage(count) when active else
+                  (others => '0'); -- could be removed to save logic
+      else generate
+        output <= input(output_bus_width-1 downto 0) when (i_ready and i_valid) = '1' and count = 0 else
+                  storage(count) when active;
+      end generate;
       process (all) is 
       begin
         if rising_edge(clk) then
@@ -144,7 +150,7 @@ begin
           else
             output(output_bus_width - 1 downto output_bus_width - input_bus_width) <= storage(n_slices-1);
           end if;
-        else 
+        elsif debug then
           output <= (others => '0');
         end if;
       end process;
