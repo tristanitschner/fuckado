@@ -8,16 +8,16 @@ use ti.common_globals.all;
 package common_sim is
   impure function rand return std_logic;
   impure function rand(len : natural) return std_logic_vector;
+  impure function rand(max : natural) return natural;
 
   shared variable globals : globals_t;
 end package;
 
 package body common_sim is
   impure function rand return std_logic is
-    variable seed1 : integer := 21;
-    variable seed2 : integer := 24;
-    variable random : real;
-    variable ret : std_logic;
+    variable seed1,seed2 : integer;
+    variable random      : real;
+    variable ret         : std_logic;
   begin
     -- this is some of the most bs code I ever wrote...
     seed1 := globals.seed1_get;
@@ -38,6 +38,23 @@ package body common_sim is
     end loop;
     return ret;
   end function;
+
+  impure function rand(max : natural) return natural is
+    variable seed1,seed2 : integer;
+    variable random      : real;
+    variable ret         : natural;
+  begin
+    -- this is some of the most bs code I ever wrote...
+    seed1 := globals.seed1_get;
+    seed2 := globals.seed2_get;
+    uniform(seed1,seed2,random);
+    globals.seed1_set(seed1);
+    globals.seed2_set(seed2);
+    -- report "generated" & real'image(random);
+    ret := natural(floor(random*(real(max+1))));
+    return ret; 
+  end function;
+
 end package body;
 
 --------------------------------------------------------------------------------
@@ -49,6 +66,7 @@ use ieee.math_real.all;
 package common is
   type sched_scheme_t is (round_robin, lowest_index_first);
 
+  function zero_vec(len : integer) return std_logic_vector;
   function clog2(x : natural) return natural;
   function reverse(x : std_logic_vector) return std_logic_vector;
   function to_onehot(x : std_logic_vector) return std_logic_vector;
@@ -57,9 +75,18 @@ package common is
   function is_power_of_two(x : natural) return boolean;
 --function is_power_of_two(x : integer) return boolean; -- causes an error, if function is declared with natural
 
+  -- this is just here, so I can redefine it, in case I need something different
+  subtype long is integer;
+
 end package;
 
 package body common is
+  function zero_vec(len : integer) return std_logic_vector is 
+    variable ret : std_logic_vector(len - 1 downto 0) := (others => '0');
+  begin
+    return ret;
+  end function;
+  -- TODO: rewrite, as cannot be handled by GHDL synthesis
   function clog2(x : natural) return natural is
   begin
     return integer(ceil(log2(real(x))));
@@ -128,6 +155,14 @@ package body common is
       end if;
     end loop;
     return ret;
+  end function;
+
+  ------------------------------------------------------------------------------
+
+-- Here we provide some functions for the "long" datatype
+  function "+" (left: long; right: long) return long is
+  begin
+    return left + right;
   end function;
 
 end package body;

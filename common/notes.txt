@@ -7,3 +7,8 @@ common components:
 * multiply
   - by repeated addition
   - newton raphson
+* data / stream width converter
+* fwft fifo
+* packet fifo
+  - drop functionality
+* stream length inserter

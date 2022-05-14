@@ -4,6 +4,7 @@ common:
 	ghdl -a --std=08 --work=ti --workdir=../libs priority_encoder.vhd
 	ghdl -a --std=08 --work=ti --workdir=../libs fifo_fwft.vhd
 	ghdl -a --std=08 --work=ti --workdir=../libs skidbuffer.vhd
+	ghdl -a --std=08 --work=ti --workdir=../libs bus_width_resizer.vhd
 
 synth: common
 	ghdl -m --std=08 --work=ti --workdir=../libs skidbuffer
@@ -34,4 +35,9 @@ priority_encoder_2_test: common
 	ghdl -m --std=08 -P../libs priority_encoder_2_tb
 	ghdl -r --std=08 -P../libs priority_encoder_2_tb --wave=priority_encoder_2_tb.ghw
 
-test: common_test fwft_test skidbuffer_test
+bus_width_resizer_test: common
+	ghdl -a --std=08 -P../libs bus_width_resizer_tb.vhd
+	ghdl -m --std=08 -P../libs bus_width_resizer_tb
+	ghdl -r --std=08 -P../libs bus_width_resizer_tb --wave=bus_width_resizer_tb.ghw
+
+test: common_test fwft_test skidbuffer_test priority_encoder_test priority_encoder_2_test bus_width_resizer_test
